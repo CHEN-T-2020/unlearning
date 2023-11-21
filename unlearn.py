@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 from torch import optim
 
 from tqdm import tqdm
@@ -41,10 +42,12 @@ def unlearning_blur(net, retain, forget, validation, epochs=1):
             inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
             optimizer.zero_grad()
             outputs = net(inputs)
+            outputs = F.softmax(outputs, dim=1)
 
             # Blur input images
-            blurred = blur(inputs)
+            blurred = less_blur(inputs)
             blurred_outputs = net(blurred)
+            blurred_outputs = F.softmax(blurred_outputs, dim=1)
 
             loss = criterion(outputs, blurred_outputs)
             loss.backward()
